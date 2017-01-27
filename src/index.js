@@ -62,11 +62,18 @@ const filesProto = {
 
 const offlineProto = {
   init: offline.init,
+  getDoctypes: offline.getDoctypes,
+  // database
   createDatabase: offline.createDatabase,
   hasDatabase: offline.hasDatabase,
   getDatabase: offline.getDatabase,
   destroyDatabase: offline.destroyDatabase,
-  replicateFromCozy: offline.replicateFromCozy
+  // replication
+  replicateFromCozy: offline.replicateFromCozy,
+  startAllSync: offline.startAllSync,
+  startSync: offline.startSync,
+  stopAllSync: offline.stopAllSync,
+  stopSync: offline.stopSync
 }
 
 class Cozy {

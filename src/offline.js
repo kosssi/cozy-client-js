@@ -1,8 +1,11 @@
 const PouchDB = require('pouchdb')
 
-export function init (cozy, { options = {}, doctypes = [] }) {
+export function init (cozy, { options = {}, doctypes = [], autoSync = false }) {
   for (let doctype of doctypes) {
     createDatabase(cozy, doctype, options)
+  }
+  if (autoSync) {
+    startAllSync(cozy, autoSync)
   }
 }
 
@@ -27,6 +30,41 @@ export function destroyDatabase (cozy, doctype) {
   if (hasDatabase(cozy, doctype)) {
     getDatabase(cozy, doctype).destroy()
     delete getDatabase(cozy, doctype)
+  }
+}
+
+export function getDoctypes (cozy) {
+  return Object.keys(cozy._offline_databases)
+}
+
+export function startAllSync (cozy, timer) {
+  if (timer) {
+    const doctypes = getDoctypes(cozy)
+    doctypes.forEach((doctype) => {
+      startSync(cozy, doctype, timer)
+    })
+  }
+}
+
+export function stopAllSync (cozy) {
+  const doctypes = getDoctypes(cozy)
+  doctypes.forEach((doctype) => {
+    stopSync(cozy, doctype)
+  })
+}
+
+export function startSync (cozy, doctype, timer) {
+  // TODO: add timer limitation for not flooding Gozy
+  cozy._offline_autoSync = cozy._offline_autoSync || []
+  cozy._offline_autoSync[doctype] = setInterval(() => {
+    replicateFromCozy(cozy, doctype)
+    // TODO: add replicationToCozy
+  }, timer * 1000)
+}
+
+export function stopSync (cozy, doctype) {
+  if (cozy._offline_autoSync && cozy._offline_autoSync[doctype]) {
+    clearInterval(cozy._offline_autoSync[doctype]);
   }
 }
 
